@@ -2,13 +2,13 @@ package dev.atsushieno.kmdsp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
@@ -37,9 +37,9 @@ object AppModel {
 
     fun playMusicFile(selectedFile: String, fileFullName: String, stream: List<Byte>) {
         currentMusicFile.value = selectedFile
-        midiPlayer.value.pause()
-        midiPlayer.value.stop()
-        resetUiStates()
+
+        pause()
+        stop()
 
         if (selectedFile.endsWith(".umpx")) {
             val music = Midi2Music().apply { read(stream, true) }
@@ -52,11 +52,32 @@ object AppModel {
                 addOnEventListener { evt -> midi1Handlers.forEach { it(evt) } }
             }
         }
-        midiPlayer.value.play()
+
+        play()
     }
 
     fun resetUiStates() {
         noteOnStates.forEach { (0 until it.size).forEach { idx -> it[idx] = 0 } }
+    }
+
+    fun play() {
+        midiPlayer.value.play()
+    }
+
+    fun pause() {
+        midiPlayer.value.pause()
+    }
+
+    fun stop() {
+        midiPlayer.value.stop()
+        resetUiStates()
+    }
+
+    fun switchFFMode() {
+        if (midiPlayer.value.tempoChangeRatio == 8.0)
+            midiPlayer.value.tempoChangeRatio = 1.0
+        else
+            midiPlayer.value.tempoChangeRatio *= 2.0
     }
 
     val umpHandlers = mutableListOf<(Ump)->Unit>()
@@ -92,15 +113,13 @@ fun App() {
     MaterialTheme {
         val midiPlayer by remember { AppModel.midiPlayer }
         Scaffold {
-            with(KmdspScopeImpl(KmdspDrawScopeImpl(), MidiPlayerStatusImpl(midiPlayer))) {
-                Row(Modifier.background(draw.backgroundColor)) {
-                    TrackComboList()
-                    Column {
-                        TitleBar()
-                        Row {
-                            PlayerControlPanel()
-                            PlayerStatusPanel()
-                        }
+            Row(Modifier.background(LocalKmdspThemeBackgroundColor.current)) {
+                TrackComboList()
+                Column {
+                    TitleBar()
+                    Row {
+                        PlayerControlPanel()
+                        PlayerStatusPanel(midiPlayer)
                     }
                 }
             }
@@ -108,90 +127,21 @@ fun App() {
     }
 }
 
-interface MidiPlayerStatus {
-    val musicPositionInMilliseconds: Long
-    val musicTotalMilliseconds: Int
-    val tickCount: Int
-    val tempo: Int
-    val timeSignature: String
-}
-
 private fun pow(x: Int, y: Int): Int = if (y == 0) 1 else x * pow(x, y - 1)
 
 private fun timeSignatureToString(timeSignature: List<Byte>) =
     "${timeSignature[0]}/${pow(2, timeSignature[1].toInt())}"
 
-class MidiPlayerStatusImpl(private val player: MidiPlayer) : MidiPlayerStatus {
-    override val musicPositionInMilliseconds: Long
-        get() = player.positionInMilliseconds
-    override val musicTotalMilliseconds: Int
-        get() = player.totalPlayTimeMilliseconds
-    override val tickCount: Int
-        get() = player.playDeltaTime
-    override val tempo: Int
-        get() = player.tempo
-    override val timeSignature: String
-        get() = timeSignatureToString(player.timeSignature)
-}
-
-interface KmdspDrawScope {
-    @get:Composable
-    val backgroundColor: Color
-    @get:Composable
-    val brightLabelColor: Color
-    @get:Composable
-    val labelColor: Color
-    @get:Composable
-    val valueColor: Color
-    @get:Composable
-    val statusLabelColor: Color
-    @get:Composable
-    val statusInactiveColor: Color
-    @get:Composable
-    val statusValueColor: Color
-}
-
-class KmdspDrawScopeImpl : KmdspDrawScope {
-    //val colorScheme = darkColorScheme() // darkColors()
-    override val backgroundColor: Color
-        @Composable
-        //get() = colorScheme.background
-        get() = Color.Black
-    override val brightLabelColor: Color
-        @Composable
-        //get() = colorScheme.primary
-        get() = Color.White
-    override val labelColor: Color
-        @Composable
-        //get() = colorScheme.secondary
-        get() = Color.Gray
-    override val valueColor: Color
-        @Composable
-        //get() = colorScheme.primary
-        get() = Color.LightGray
-    override val statusLabelColor: Color
-        @Composable
-        //get() = colorScheme.primary
-        get() = Color.LightGray
-    override val statusInactiveColor: Color
-        @Composable
-        //get() =  colorScheme.secondary
-        get() = Color.DarkGray
-    override val statusValueColor: Color
-        @Composable
-        //get() =  colorScheme.primary
-        get() = Color.LightGray
-}
-
-interface KmdspScope {
-    val draw: KmdspDrawScope
-    val player: MidiPlayerStatus
-}
-
-class KmdspScopeImpl(override val draw: KmdspDrawScope, override val player: MidiPlayerStatus): KmdspScope
+val LocalKmdspThemeBackgroundColor = compositionLocalOf { Color.Black }
+val LocalKmdspThemeBrightLabelColor = compositionLocalOf { Color.White }
+val LocalKmdspThemeLabelColor = compositionLocalOf { Color.Gray }
+val LocalKmdspThemeValueColor = compositionLocalOf { Color.LightGray }
+val LocalKmdspThemeStatusLabelColor = compositionLocalOf { Color.LightGray }
+val LocalKmdspThemeStatusInactiveColor = compositionLocalOf { Color.DarkGray }
+val LocalKmdspThemeStatusValueColor = compositionLocalOf { Color.LightGray }
 
 @Composable
-fun KmdspScope.TrackComboList() {
+fun TrackComboList() {
     LazyColumn {
         items(16) {
             TrackCombo(it)
@@ -200,7 +150,7 @@ fun KmdspScope.TrackComboList() {
 }
 
 @Composable
-fun KmdspScope.TrackCombo(trackNumber: Int) {
+fun TrackCombo(trackNumber: Int) {
     Column {
         TrackComboStatus(trackNumber)
         KeyboardView(trackNumber)
@@ -208,23 +158,23 @@ fun KmdspScope.TrackCombo(trackNumber: Int) {
 }
 
 @Composable
-fun KmdspScope.TrackStatusLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 10.sp, color = draw.labelColor, modifier = modifier)
+fun TrackStatusLabel(text: String, modifier: Modifier = Modifier) {
+    Text(text, fontSize = 10.sp, color = LocalKmdspThemeLabelColor.current, modifier = modifier)
 }
 
 @Composable
-fun KmdspScope.TrackStatusValue(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 10.sp, color = draw.valueColor, modifier = modifier)
+fun TrackStatusValue(text: String, modifier: Modifier = Modifier) {
+    Text(text, fontSize = 10.sp, color = LocalKmdspThemeValueColor.current, modifier = modifier)
 }
 
 @Composable
-fun KmdspScope.TrackComboStatus(trackNumber: Int) {
+fun TrackComboStatus(trackNumber: Int) {
     Row {
         Column {
             TrackStatusLabel("MIDI")
-            Text(text = "TRACK.", fontSize = 10.sp, color = draw.brightLabelColor)
+            Text(text = "TRACK.", fontSize = 10.sp, color = LocalKmdspThemeBrightLabelColor.current)
         }
-        Text((trackNumber + 1).toString(), fontSize = 20.sp, color = draw.valueColor, modifier = Modifier.width(60.dp))
+        Text((trackNumber + 1).toString(), fontSize = 20.sp, color = LocalKmdspThemeValueColor.current, modifier = Modifier.width(60.dp))
 
         Column(modifier = Modifier.width(30.dp)) {
             TrackStatusLabel("VOL")
@@ -266,7 +216,7 @@ fun KmdspScope.TrackComboStatus(trackNumber: Int) {
 }
 
 @Composable
-fun KmdspScope.KeyboardView(trackNumber: Int) {
+fun KeyboardView(trackNumber: Int) {
     // Note that on this player a "Track" maps to a channel, not an SMF track.
     val noteOnStates = remember { AppModel.noteOnStates[trackNumber] }
     DiatonicKeyboard(
@@ -279,14 +229,14 @@ fun KmdspScope.KeyboardView(trackNumber: Int) {
 }
 
 @Composable
-fun KmdspScope.TitleBarLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 10.sp, color = draw.statusInactiveColor, modifier = modifier, textDecoration = TextDecoration.Underline)
+fun TitleBarLabel(text: String, modifier: Modifier = Modifier) {
+    Text(text, fontSize = 10.sp, color = LocalKmdspThemeStatusInactiveColor.current, modifier = modifier, textDecoration = TextDecoration.Underline)
 }
 
 @Composable
-fun KmdspScope.TitleBar() {
+fun TitleBar() {
     Row(Modifier.padding(0.dp, 8.dp, 0.dp, 16.dp)) {
-        Text("MIDI2DSP", color = draw.brightLabelColor, fontSize = 20.sp, modifier = Modifier.padding(0.dp, 0.dp, 12.dp, 0.dp))
+        Text("MIDI2DSP", color = LocalKmdspThemeBrightLabelColor.current, fontSize = 20.sp, modifier = Modifier.padding(0.dp, 0.dp, 12.dp, 0.dp))
         Column {
             TitleBarLabel("MIDI 2.0 music file player")
             TitleBarLabel("(C)2024 atsushieno and ktmidi developers")
@@ -295,17 +245,17 @@ fun KmdspScope.TitleBar() {
 }
 
 @Composable
-fun KmdspScope.PlayerControlPanel() {
+fun PlayerControlPanel() {
     Column {
         Row {
-            CircularProgressIndicator(0.8f, color = draw.statusValueColor, modifier = Modifier.size(32.dp).padding(4.dp))
+            CircularProgressIndicator(0.8f, color = LocalKmdspThemeStatusValueColor.current, modifier = Modifier.size(32.dp).padding(4.dp))
             LazyVerticalGrid(GridCells.Fixed(2), modifier = Modifier.width(100.dp)) {
                 items(4) {
                     when(it) {
-                        0 -> PlayerControlButton('\u25B6', "Play")
-                        1 -> PlayerControlButton('\u23E9', "FF")
-                        2 -> PlayerControlButton('\u23F8', "Pause")
-                        3 -> PlayerControlButton('\u23F9', "Stop")
+                        0 -> PlayerControlButton("▶️", "Play", onClick = { AppModel.play() })
+                        1 -> PlayerControlButton("⏩", "FF", onClick = { AppModel.switchFFMode() })
+                        2 -> PlayerControlButton("⏸️", "Pause", onClick = { AppModel.pause() })
+                        3 -> PlayerControlButton("⏹️", "Stop", onClick = { AppModel.stop() })
                     }
                 }
             }
@@ -332,20 +282,22 @@ fun KmdspScope.PlayerControlPanel() {
 }
 
 @Composable
-fun KmdspScope.ControlButtonLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 12.sp, color = draw.statusLabelColor, modifier = modifier)
+fun ControlButtonLabel(text: String, modifier: Modifier = Modifier) {
+    Text(text, fontSize = 12.sp, color = LocalKmdspThemeStatusLabelColor.current, modifier = modifier)
 }
 
 @Composable
-fun KmdspScope.PlayerControlButton(emoji: Char, text: String) {
-    Row(Modifier.border(1.dp, draw.statusInactiveColor)) {
-        ControlButtonLabel(emoji.toString())
+fun PlayerControlButton(emoji: String, text: String,
+                        onClick: ()->Unit = {}) {
+    Row(Modifier.border(1.dp, LocalKmdspThemeStatusInactiveColor.current)
+        .clickable { onClick() }) {
+        ControlButtonLabel(emoji)
         ControlButtonLabel(text)
     }
 }
 
 @Composable
-fun KmdspScope.FilePickerLauncher(currentFileName: String?, onChange: (baseFileName: String, filename: String, stream: List<Byte>) -> Unit, onDismiss: () -> Unit) {
+fun FilePickerLauncher(currentFileName: String?, onChange: (baseFileName: String, filename: String, stream: List<Byte>) -> Unit, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     Button(onClick = {
         scope.launch {
@@ -363,30 +315,30 @@ fun KmdspScope.FilePickerLauncher(currentFileName: String?, onChange: (baseFileN
 private fun millisecondsToString(value: Long) : String = "${value / 1000 / 60}:${value / 1000 % 60}"
 
 @Composable
-fun KmdspScope.PlayerStatusPanel() {
+fun PlayerStatusPanel(player: MidiPlayer) {
     Column {
-        PlayerStatusPanelEntry("Passed", "Time", millisecondsToString(player.musicPositionInMilliseconds))
-        PlayerStatusPanelEntry("Total", "Time", millisecondsToString(player.musicTotalMilliseconds.toLong()))
-        PlayerStatusPanelEntry("Tick", "Count", player.tickCount.toString())
+        PlayerStatusPanelEntry("Passed", "Time", millisecondsToString(player.positionInMilliseconds))
+        PlayerStatusPanelEntry("Total", "Time", millisecondsToString(player.totalPlayTimeMilliseconds.toLong()))
+        PlayerStatusPanelEntry("Tick", "Count", player.playDeltaTime.toString())
         PlayerStatusPanelEntry("Tempo", "", player.tempo.toString())
-        PlayerStatusPanelEntry("Time", "Signature", player.timeSignature)
+        PlayerStatusPanelEntry("Time", "Signature", timeSignatureToString(player.timeSignature))
     }
 }
 
 @Composable
-fun KmdspScope.StatusPanelLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 10.sp, color = draw.statusLabelColor, modifier = modifier)
+fun StatusPanelLabel(text: String, modifier: Modifier = Modifier) {
+    Text(text, fontSize = 10.sp, color = LocalKmdspThemeStatusLabelColor.current, modifier = modifier)
 }
 
 @Composable
-fun KmdspScope.StatusPanelValue(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 20.sp, color = draw.statusValueColor, modifier = modifier)
+fun StatusPanelValue(text: String, modifier: Modifier = Modifier) {
+    Text(text, fontSize = 20.sp, color = LocalKmdspThemeStatusValueColor.current, modifier = modifier)
 }
 
 @Composable
-fun KmdspScope.PlayerStatusPanelEntry(text1: String, text2: String, value: String) {
+fun PlayerStatusPanelEntry(text1: String, text2: String, value: String) {
     Row(Modifier.padding(4.dp)) {
-        Box(Modifier.background(draw.statusLabelColor).width(5.dp).wrapContentHeight()) {
+        Box(Modifier.background(LocalKmdspThemeStatusValueColor.current).width(5.dp).wrapContentHeight()) {
             Text(" ", fontSize = 20.sp)
         }
         Column(Modifier.width(80.dp).padding(8.dp, 0.dp)) {
@@ -395,7 +347,7 @@ fun KmdspScope.PlayerStatusPanelEntry(text1: String, text2: String, value: Strin
         }
         StatusPanelValue(value)
     }
-    Box(Modifier.background(draw.statusInactiveColor).height(1.dp).width(200.dp)) {
+    Box(Modifier.background(LocalKmdspThemeStatusInactiveColor.current).height(1.dp).width(200.dp)) {
         Text(" ", fontSize = 20.sp)
     }
 }
