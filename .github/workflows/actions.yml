@@ -53,6 +53,7 @@ jobs:
 
     - name: deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@4.1.2
+      if: contains(matrix.os, 'ubuntu')
       with:
         branch: gh-pages
         folder: kmdsp/build/processedResources/wasmJs/main
