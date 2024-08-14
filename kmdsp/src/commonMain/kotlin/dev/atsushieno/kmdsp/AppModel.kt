@@ -76,22 +76,32 @@ object AppModel {
     var musicCurrentTicks = mutableStateOf(0L)
     var musicStatus = mutableStateOf(MusicStatus(midiPlayer.value))
 
+    val midi1Machine = Midi1MachineState()
+    val midi2Machine = Midi2MachineState()
+
     init {
-        midi1Handlers.add {
-            if (it.message.statusByte.toUnsigned() == Midi1Status.META) {
-                when (it.message.metaType.toInt()) {
+        midi1Handlers.add{ evt ->
+            val it = evt.message
+            midi1Machine.processMessage(it)
+
+            if (it.statusByte.toUnsigned() == Midi1Status.META) {
+                when (it.metaType.toInt()) {
                     MidiMetaType.TEMPO, MidiMetaType.TIME_SIGNATURE ->
                         this.musicStatus.value = MusicStatus(midiPlayer.value)
                 }
             }
-            when (it.message.statusCode.toUnsigned()) {
-                MidiChannelStatus.NOTE_ON -> noteOnStates[it.message.channel.toInt()][it.message.msb.toInt()] = 1
-                MidiChannelStatus.NOTE_OFF -> noteOnStates[it.message.channel.toInt()][it.message.msb.toInt()] = 0
+            when (it.statusCode.toUnsigned()) {
+                MidiChannelStatus.NOTE_ON -> noteOnStates[it.channel.toInt()][it.msb.toInt()] = 1
+                MidiChannelStatus.NOTE_OFF -> noteOnStates[it.channel.toInt()][it.msb.toInt()] = 0
             }
+
             musicCurrentTicks.value = midiPlayer.value.playDeltaTime.toLong()
             musicCurrentMilliseconds.value = midiPlayer.value.positionInMilliseconds
         }
+
         umpHandlers.add {
+            midi2Machine.processEvent(it)
+
             val channel = it.group * 16 + it.channelInGroup
             if (it.messageType == MidiMessageType.FLEX_DATA) {
                 when (it.statusCode.toByte()) {

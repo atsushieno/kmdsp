@@ -85,6 +85,8 @@ fun TrackStatusValue(text: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun TrackComboStatus(trackNumber: Int) {
+    // FIXME: support midi2Machine as well.
+    val channelState = AppModel.midi1Machine.channels[trackNumber]
     Row {
         Column {
             TrackStatusLabel("MIDI")
@@ -97,36 +99,46 @@ fun TrackComboStatus(trackNumber: Int) {
             TrackStatusLabel("RSD")
         }
         Column(modifier = Modifier.width(40.dp)) {
-            TrackStatusValue("999")
-            TrackStatusValue("999")
+            val vol by remember { channelState.controls[MidiCC.VOLUME] }
+            val rsd by remember { channelState.controls[MidiCC.RSD] }
+            TrackStatusValue(vol.toString())
+            TrackStatusValue(rsd.toString())
         }
         Column(modifier = Modifier.width(30.dp)) {
             TrackStatusLabel("EXP")
             TrackStatusLabel("CSD")
         }
         Column(modifier = Modifier.width(40.dp)) {
-            TrackStatusValue("999")
-            TrackStatusValue("999")
+            val exp by remember { channelState.controls[MidiCC.EXPRESSION] }
+            val csd by remember { channelState.controls[MidiCC.CSD] }
+            TrackStatusValue(exp.toString())
+            TrackStatusValue(csd.toString())
         }
         Column(modifier = Modifier.width(30.dp)) {
             TrackStatusLabel("MOD")
             TrackStatusLabel("DSD")
         }
         Column(modifier = Modifier.width(40.dp)) {
-            TrackStatusValue("999")
-            TrackStatusValue("999")
+            val mod by remember { channelState.controls[MidiCC.MODULATION] }
+            val dsd by remember { channelState.controls[MidiCC.EFFECT_3] }
+            TrackStatusValue(mod.toString())
+            TrackStatusValue(dsd.toString())
         }
         Column(modifier = Modifier.width(20.dp)) {
-            TrackStatusValue("H")
-            TrackStatusValue("P")
+            val h by remember { channelState.controls[MidiCC.HOLD] }
+            val p by remember { channelState.controls[MidiCC.PORTAMENTO_SWITCH] }
+            TrackStatusValue(if (h > 63) "H" else "-")
+            TrackStatusValue(if (p > 63) "P" else "-")
         }
         Column(modifier = Modifier.width(30.dp)) {
             TrackStatusLabel("So")
             TrackStatusLabel("SP")
         }
         Column(modifier = Modifier.width(40.dp)) {
-            TrackStatusValue("999")
-            TrackStatusValue("999")
+            val so by remember { channelState.controls[MidiCC.SOSTENUTO] }
+            val sp by remember { channelState.controls[MidiCC.SOFT_PEDAL] }
+            TrackStatusValue(so.toString())
+            TrackStatusValue(sp.toString())
         }
     }
 }
@@ -239,7 +251,7 @@ fun PlayerStatusPanel() {
         PlayerStatusPanelEntry("Passed", "Time", millisecondsToString(currentPosition))
         PlayerStatusPanelEntry("Total", "Time", millisecondsToString(status.totalPlayTimeMilliseconds))
         PlayerStatusPanelEntry("Tick", "Count", currentTicks.toString())
-        PlayerStatusPanelEntry("Tempo", "", status.tempo.toString())
+        PlayerStatusPanelEntry("BPM", "", (60000000 / status.tempo).toString())
         PlayerStatusPanelEntry("Time", "Signature", timeSignatureToString(status.timeSignatureNominator, status.timeSignatureDenominatorBase))
     }
 }
