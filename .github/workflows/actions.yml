@@ -50,3 +50,9 @@ jobs:
           kmdsp/build/compose/binaries/main/deb/*.deb
           kmdsp/build/compose/binaries/main/dmg/*.dmg
           kmdsp/build/compose/binaries/main/msi/*.msi
+
+    - name: deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.1.2
+      with:
+        branch: gh-pages
+        folder: kmdsp/build/processedResources/wasmJs/main
