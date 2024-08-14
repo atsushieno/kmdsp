@@ -72,19 +72,54 @@ object AppModel {
 
     val noteOnStates = List(256) { List(128) { 0L }.toMutableStateList() }
 
+    var musicCurrentMilliseconds = mutableStateOf(0L)
+    var musicCurrentTicks = mutableStateOf(0L)
+    var musicStatus = mutableStateOf(MusicStatus(midiPlayer.value))
+
     init {
         midi1Handlers.add {
+            if (it.message.statusByte.toUnsigned() == Midi1Status.META) {
+                when (it.message.metaType.toInt()) {
+                    MidiMetaType.TEMPO, MidiMetaType.TIME_SIGNATURE ->
+                        this.musicStatus.value = MusicStatus(midiPlayer.value)
+                }
+            }
             when (it.message.statusCode.toUnsigned()) {
                 MidiChannelStatus.NOTE_ON -> noteOnStates[it.message.channel.toInt()][it.message.msb.toInt()] = 1
                 MidiChannelStatus.NOTE_OFF -> noteOnStates[it.message.channel.toInt()][it.message.msb.toInt()] = 0
             }
+            musicCurrentTicks.value = midiPlayer.value.playDeltaTime.toLong()
+            musicCurrentMilliseconds.value = midiPlayer.value.positionInMilliseconds
         }
         umpHandlers.add {
             val channel = it.group * 16 + it.channelInGroup
+            if (it.messageType == MidiMessageType.FLEX_DATA) {
+                when (it.statusCode.toByte()) {
+                    FlexDataStatus.TEMPO, FlexDataStatus.TIME_SIGNATURE ->
+                        this.musicStatus.value = MusicStatus(midiPlayer.value)
+                }
+            }
             when (it.statusCode) {
                 MidiChannelStatus.NOTE_ON -> noteOnStates[channel][it.midi2Note] = 1
                 MidiChannelStatus.NOTE_OFF -> noteOnStates[channel][it.midi2Note] = 0
             }
+            musicCurrentTicks.value = midiPlayer.value.playDeltaTime.toLong()
+            musicCurrentMilliseconds.value = midiPlayer.value.positionInMilliseconds
         }
     }
+}
+
+data class MusicStatus(
+    val totalPlayTimeMilliseconds: Long,
+    val playDeltaTime: Int,
+    val tempo: Int,
+    val timeSignatureNominator: Byte,
+    val timeSignatureDenominatorBase: Byte
+) {
+    constructor(player: MidiPlayer) : this(
+        player.totalPlayTimeMilliseconds.toLong(),
+        player.playDeltaTime,
+        player.tempo,
+        player.timeSignature[0],
+        player.timeSignature[1])
 }

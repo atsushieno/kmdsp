@@ -35,7 +35,7 @@ fun App() {
                     TitleBar()
                     Row {
                         PlayerControlPanel()
-                        PlayerStatusPanel(midiPlayer)
+                        PlayerStatusPanel()
                     }
                 }
             }
@@ -45,8 +45,8 @@ fun App() {
 
 private fun pow(x: Int, y: Int): Int = if (y == 0) 1 else x * pow(x, y - 1)
 
-private fun timeSignatureToString(timeSignature: List<Byte>) =
-    "${timeSignature[0]}/${pow(2, timeSignature[1].toInt())}"
+private fun timeSignatureToString(timeSignatureNominator: Byte, timeSignatureDenoimnatorBase: Byte) =
+    "${timeSignatureNominator}/${pow(2, timeSignatureDenoimnatorBase.toInt())}"
 
 val LocalKmdspThemeBackgroundColor = compositionLocalOf { Color.Black }
 val LocalKmdspThemeBrightLabelColor = compositionLocalOf { Color.White }
@@ -231,13 +231,16 @@ fun FilePickerLauncher(currentFileName: String?, onChange: (baseFileName: String
 private fun millisecondsToString(value: Long) : String = "${value / 1000 / 60}:${value / 1000 % 60}"
 
 @Composable
-fun PlayerStatusPanel(player: MidiPlayer) {
+fun PlayerStatusPanel() {
+    val status by remember { AppModel.musicStatus }
+    val currentTicks by remember { AppModel.musicCurrentTicks }
+    val currentPosition by remember { AppModel.musicCurrentMilliseconds }
     Column {
-        PlayerStatusPanelEntry("Passed", "Time", millisecondsToString(player.positionInMilliseconds))
-        PlayerStatusPanelEntry("Total", "Time", millisecondsToString(player.totalPlayTimeMilliseconds.toLong()))
-        PlayerStatusPanelEntry("Tick", "Count", player.playDeltaTime.toString())
-        PlayerStatusPanelEntry("Tempo", "", player.tempo.toString())
-        PlayerStatusPanelEntry("Time", "Signature", timeSignatureToString(player.timeSignature))
+        PlayerStatusPanelEntry("Passed", "Time", millisecondsToString(currentPosition))
+        PlayerStatusPanelEntry("Total", "Time", millisecondsToString(status.totalPlayTimeMilliseconds))
+        PlayerStatusPanelEntry("Tick", "Count", currentTicks.toString())
+        PlayerStatusPanelEntry("Tempo", "", status.tempo.toString())
+        PlayerStatusPanelEntry("Time", "Signature", timeSignatureToString(status.timeSignatureNominator, status.timeSignatureDenominatorBase))
     }
 }
 
