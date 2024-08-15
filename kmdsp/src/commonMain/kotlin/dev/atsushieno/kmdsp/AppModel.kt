@@ -24,16 +24,21 @@ object AppModel {
         pause()
         stop()
 
-        if (selectedFile.endsWith(".umpx")) {
-            val music = Midi2Music().apply { read(stream, true) }
-            midiPlayer.value = Midi2Player(music, midiOutput.value).apply {
-                addOnMessageListener { evt -> umpHandlers.forEach { it(evt) } }
+        try {
+            if (selectedFile.endsWith(".umpx")) {
+                val music = Midi2Music().apply { read(stream, true) }
+                midiPlayer.value = Midi2Player(music, midiOutput.value).apply {
+                    addOnMessageListener { evt -> umpHandlers.forEach { it(evt) } }
+                }
+            } else {
+                val music = Midi1Music().apply { read(stream) }
+                midiPlayer.value = Midi1Player(music, midiOutput.value).apply {
+                    addOnEventListener { evt -> midi1Handlers.forEach { it(evt) } }
+                }
             }
-        } else {
-            val music = Midi1Music().apply { read(stream) }
-            midiPlayer.value = Midi1Player(music, midiOutput.value).apply {
-                addOnEventListener { evt -> midi1Handlers.forEach { it(evt) } }
-            }
+        } catch (ex: Exception) {
+            println(ex)
+            lastError = ex
         }
 
         play()
@@ -80,6 +85,8 @@ object AppModel {
 
     val midi1Machine = Midi1MachineState()
     val midi2Machine = Midi2MachineState()
+
+    var lastError: Exception? = null
 
     init {
         midi1Handlers.add{ evt ->
