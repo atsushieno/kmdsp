@@ -4,7 +4,7 @@
 
 KMDSP is a visual SMF / MIDI 2.0 song file player based on Kotlin Multiplatform and covers JVM desktop, Android, iOS and Web using WebAssembly.
 
-You can try the wasm version in action: https://github.com/atsushieno/kmdsp
+You can try the wasm version in action: https://atsushieno.github.io/kmdsp/
 
 KMDSP is an updated port of atsushieno/XMDSP, which was originally inspired by ancient Japanese music players such as [MMDSP](https://github.com/gaolay/MMDSP) but to support SMF instead of FM synthesizers as of those ages.
 
