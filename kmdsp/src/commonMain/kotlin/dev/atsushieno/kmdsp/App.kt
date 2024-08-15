@@ -334,14 +334,15 @@ fun KeyOnMeter(channel: Int) {
 
 @Composable
 fun PanDial(channel: Int) {
-    val color = LocalKmdspThemeStatusInactiveColor.current
+    val outColor = LocalKmdspThemeStatusLabelColor.current
+    val inColor = LocalKmdspThemeStatusValueColor.current
     // FIXME: support midi2Machine state
     // FIXME: LSB?
     val pan by remember { AppModel.midi1Machine.channels[channel].controls[MidiCC.PAN] }
 
     Canvas(Modifier.width(28.dp).height(28.dp).padding(2.dp)) {
-        drawCircle(color, style = Stroke(1f))
-        val panAngle = ((64 - pan) / 90.0) * 45 - 150
-        drawArc(color, panAngle.toFloat(), 60f, true, topLeft = Offset(2.dp.toPx(), 2.dp.toPx()), size = Size(20.dp.toPx(), 20.dp.toPx()))
+        drawCircle(outColor, style = Stroke(1f))
+        val panAngle = -(64 - pan) / 128.0 * 120 + 240
+        drawArc(inColor, panAngle.toFloat(), 60f, true, topLeft = Offset(2.dp.toPx(), 2.dp.toPx()), size = Size(20.dp.toPx(), 20.dp.toPx()))
     }
 }
