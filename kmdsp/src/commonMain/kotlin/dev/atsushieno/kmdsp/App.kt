@@ -1,16 +1,22 @@
 package dev.atsushieno.kmdsp
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,6 +43,7 @@ fun App() {
                         PlayerControlPanel()
                         PlayerStatusPanel()
                     }
+                    KeyOnMeterComboList()
                 }
             }
         }
@@ -59,7 +66,7 @@ val LocalKmdspThemeStatusValueColor = compositionLocalOf { Color.LightGray }
 @Composable
 fun TrackComboList() {
     LazyColumn {
-        items(16) {
+        items(AppModel.numTracks) {
             TrackCombo(it)
         }
     }
@@ -280,5 +287,61 @@ fun PlayerStatusPanelEntry(text1: String, text2: String, value: String) {
     }
     Box(Modifier.background(LocalKmdspThemeStatusInactiveColor.current).height(1.dp).width(200.dp)) {
         Text(" ", fontSize = 20.sp)
+    }
+}
+
+@Composable
+fun KeyOnMeterComboList() {
+    Row {
+        Column {
+            TrackStatusLabel("Ch. ")
+            TrackStatusLabel("PRG ")
+            TrackStatusLabel("BNK ")
+            TrackStatusLabel("PAN ")
+        }
+        LazyRow {
+            items(AppModel.numTracks) {
+                KeyOnMeterCombo(it)
+            }
+        }
+    }
+}
+
+@Composable
+fun KeyOnMeterCombo(channel: Int) {
+    Column {
+        Text(text = (channel + 1).toString(), fontSize = 10.sp, color = LocalKmdspThemeBrightLabelColor.current)
+
+        // FIXME: support midi2Machine state
+        val channelState = AppModel.midi1Machine.channels[channel]
+        KeyOnMeter(channel)
+        val program by remember { channelState.program }
+        // FIXME: LSB?
+        val bank by remember { channelState.controls[MidiCC.BANK_SELECT] }
+        // FIXME: LSB?
+        val pan by remember { channelState.controls[MidiCC.PAN] }
+        TrackStatusValue(program.toString())
+        TrackStatusValue(bank.toString())
+        TrackStatusValue(pan.toString())
+        PanDial(channel)
+    }
+}
+
+@Composable
+fun KeyOnMeter(channel: Int) {
+
+}
+
+@Composable
+fun PanDial(channel: Int) {
+    val color = LocalKmdspThemeStatusInactiveColor.current
+    // FIXME: support midi2Machine state
+    // FIXME: LSB?
+    val pan by remember { AppModel.midi1Machine.channels[channel].controls[MidiCC.PAN] }
+
+    Canvas(Modifier.width(28.dp).height(28.dp).padding(2.dp)) {
+        drawCircle(color, style = Stroke(1f))
+        val panAngle = ((64 - pan) / 90.0) * 45 - 150
+        drawArc(color, panAngle.toFloat(), 60f, true, topLeft = Offset(2.dp.toPx(), 2.dp.toPx()), size = Size(20.dp.toPx(), 20.dp.toPx()))
     }
 }

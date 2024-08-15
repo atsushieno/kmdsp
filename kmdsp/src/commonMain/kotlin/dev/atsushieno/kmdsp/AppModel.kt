@@ -6,6 +6,8 @@ import androidx.compose.runtime.toMutableStateList
 import dev.atsushieno.ktmidi.*
 
 object AppModel {
+    const val numTracks = 16
+
     suspend fun setSelectedDevice(id: Int) {
         midiPlayer.value.pause()
         midiPlayer.value.stop()
