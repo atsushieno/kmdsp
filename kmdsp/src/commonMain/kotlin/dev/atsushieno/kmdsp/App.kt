@@ -1,5 +1,7 @@
 package dev.atsushieno.kmdsp
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,12 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.atsushieno.ktmidi.*
+import dev.atsushieno.ktmidi.MidiCC
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.baseName
@@ -329,7 +330,21 @@ fun KeyOnMeterCombo(channel: Int) {
 
 @Composable
 fun KeyOnMeter(channel: Int) {
-
+    val meterHeight = remember { Animatable(0f) }
+    val keyOnMeterState by remember { AppModel.keyOnMeterStates[channel] }
+    LaunchedEffect(channel, keyOnMeterState) {
+        meterHeight.snapTo(1f)
+        // the decay speed depends on tempo.
+        val decayMillis = 1500 * 500000 / AppModel.musicStatus.value.tempo
+        meterHeight.animateTo(0f, initialVelocity = 1f, animationSpec = TweenSpec(decayMillis))
+    }
+    val bgColor = LocalKmdspThemeStatusInactiveColor.current
+    val fgColor = LocalKmdspThemeStatusValueColor.current
+    Box {
+        Box(Modifier.width(24.dp).height(60.dp).background(bgColor))
+        val h = 60 * meterHeight.value
+        Box(Modifier.offset(0.dp, (60 - h).dp).width(24.dp).height(h.dp).background(fgColor))
+    }
 }
 
 @Composable

@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
 import dev.atsushieno.ktmidi.*
+import kotlin.random.Random
 
 object AppModel {
     const val numTracks = 16
@@ -78,6 +79,7 @@ object AppModel {
     var midiPlayer: MutableState<MidiPlayer> = mutableStateOf(Midi1Player(Midi1Music(), midiOutput.value))
 
     val noteOnStates = List(256) { List(128) { 0L }.toMutableStateList() }
+    val keyOnMeterStates = List(256) { mutableStateOf(0) }
 
     var musicCurrentMilliseconds = mutableStateOf(0L)
     var musicCurrentTicks = mutableStateOf(0L)
@@ -100,7 +102,11 @@ object AppModel {
                 }
             }
             when (it.statusCode.toUnsigned()) {
-                MidiChannelStatus.NOTE_ON -> noteOnStates[it.channel.toInt()][it.msb.toInt()] = 1
+                MidiChannelStatus.NOTE_ON -> {
+                    noteOnStates[it.channel.toInt()][it.msb.toInt()] = 1
+                    if (it.lsb.toInt() != 0)
+                        this.keyOnMeterStates[it.channel.toInt()].value = Random.nextInt()
+                }
                 MidiChannelStatus.NOTE_OFF -> noteOnStates[it.channel.toInt()][it.msb.toInt()] = 0
             }
 
