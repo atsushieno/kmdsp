@@ -296,6 +296,7 @@ fun KeyOnMeterComboList() {
     Row {
         Column {
             TrackStatusLabel("Ch. ")
+            Box(Modifier.width(24.dp).height(60.dp))
             TrackStatusLabel("PRG ")
             TrackStatusLabel("BNK ")
             TrackStatusLabel("PAN ")
