@@ -35,7 +35,6 @@ fun Byte.toUnsigned() = if (this >= 0) this.toInt() else this + 256
 @Composable
 fun App() {
     MaterialTheme {
-        val midiPlayer by remember { AppModel.midiPlayer }
         Scaffold {
             Row(Modifier.background(LocalKmdspThemeBackgroundColor.current)) {
                 TrackComboList()
@@ -84,12 +83,12 @@ fun TrackCombo(trackNumber: Int) {
 
 @Composable
 fun TrackStatusLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 10.sp, color = LocalKmdspThemeLabelColor.current, modifier = modifier)
+    Text(text, fontSize = 10.sp, lineHeight = 14.sp, color = LocalKmdspThemeLabelColor.current, modifier = modifier)
 }
 
 @Composable
 fun TrackStatusValue(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 10.sp, color = LocalKmdspThemeValueColor.current, modifier = modifier)
+    Text(text, fontSize = 10.sp, lineHeight = 14.sp, color = LocalKmdspThemeValueColor.current, modifier = modifier)
 }
 
 @Composable
@@ -99,9 +98,9 @@ fun TrackComboStatus(trackNumber: Int) {
     Row {
         Column {
             TrackStatusLabel("MIDI")
-            Text(text = "CH.", fontSize = 10.sp, color = LocalKmdspThemeBrightLabelColor.current)
+            Text(text = "CH.", fontSize = 10.sp, lineHeight = 14.sp, color = LocalKmdspThemeBrightLabelColor.current)
         }
-        Text((trackNumber + 1).toString(), fontSize = 20.sp, color = LocalKmdspThemeValueColor.current, modifier = Modifier.width(60.dp))
+        Text(" ${trackNumber + 1}", fontSize = 24.sp, color = LocalKmdspThemeValueColor.current, modifier = Modifier.width(60.dp))
 
         Column(modifier = Modifier.width(30.dp)) {
             TrackStatusLabel("VOL")
