@@ -48,14 +48,17 @@ object AppModel {
     fun resetUiStates() {
         noteOnStates.forEach { (0 until it.size).forEach { idx -> it[idx] = 0 } }
         keyOnMeterStates.forEach { it.value = 0 }
+        midiPlayerState.value = midiPlayer.value.state
     }
 
     fun play() {
         midiPlayer.value.play()
+        midiPlayerState.value = midiPlayer.value.state
     }
 
     fun pause() {
         midiPlayer.value.pause()
+        midiPlayerState.value = midiPlayer.value.state
     }
 
     fun stop() {
@@ -78,6 +81,7 @@ object AppModel {
     var midiAccess: MutableState<MidiAccess> = mutableStateOf(EmptyMidiAccess())
     var midiOutput = mutableStateOf(EmptyMidiAccess.output)
     var midiPlayer: MutableState<MidiPlayer> = mutableStateOf(Midi1Player(Midi1Music(), midiOutput.value))
+    var midiPlayerState = mutableStateOf(PlayerState.STOPPED)
 
     val noteOnStates = List(256) { List(128) { 0L }.toMutableStateList() }
     val keyOnMeterStates = List(256) { mutableStateOf(0) }
@@ -88,6 +92,11 @@ object AppModel {
 
     val midi1Machine = Midi1MachineState()
     val midi2Machine = Midi2MachineState()
+
+    // the decay/rotation speed depends on tempo.
+    val animatedTweenBaseMilliseconds
+        get() = 1500 * 500000 / musicStatus.value.tempo
+
 
     var lastError: Exception? = null
 

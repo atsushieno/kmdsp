@@ -1,7 +1,6 @@
 package dev.atsushieno.kmdsp
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -184,9 +183,16 @@ fun TitleBar() {
 
 @Composable
 fun PlayerControlPanel() {
+    val infiniteTransition = rememberInfiniteTransition(label = "infinite")
+    val playerState by remember { AppModel.midiPlayerState }
+    val progress by infiniteTransition.animateFloat(0f, 1f,
+        InfiniteRepeatableSpec(TweenSpec(AppModel.animatedTweenBaseMilliseconds, 0, LinearEasing)))
     Column {
         Row {
-            CircularProgressIndicator(0.8f, color = LocalKmdspThemeStatusValueColor.current, modifier = Modifier.size(32.dp).padding(4.dp))
+            CircularProgressIndicator(if (playerState == PlayerState.PLAYING) progress else 0f,
+                color = LocalKmdspThemeStatusValueColor.current,
+                modifier = Modifier.size(32.dp).padding(4.dp)
+            )
             LazyVerticalGrid(GridCells.Fixed(2), modifier = Modifier.width(100.dp)) {
                 items(4) {
                     when(it) {
@@ -339,9 +345,7 @@ fun KeyOnMeter(channel: Int) {
         // it should not trigger the effect if it is not at playing state (e.g. at initial state)
         if (AppModel.midiPlayer.value.state == PlayerState.PLAYING)
             meterHeight.snapTo(1f)
-        // the decay speed depends on tempo.
-        val decayMillis = 1500 * 500000 / AppModel.musicStatus.value.tempo
-        meterHeight.animateTo(0f, initialVelocity = 1f, animationSpec = TweenSpec(decayMillis))
+        meterHeight.animateTo(0f, initialVelocity = 1f, animationSpec = TweenSpec(AppModel.animatedTweenBaseMilliseconds))
     }
     val bgColor = LocalKmdspThemeStatusInactiveColor.current
     val fgColor = LocalKmdspThemeStatusValueColor.current

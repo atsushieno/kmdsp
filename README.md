@@ -24,7 +24,6 @@ No ALSA UMP support in ktmidi yet (investigating why it's not working).
 
 These are not ported from XMDSP yet:
 
-- circular progress bar
 - hot reloading of the playing song
 
 # Licenses
