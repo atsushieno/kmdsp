@@ -47,6 +47,7 @@ object AppModel {
 
     fun resetUiStates() {
         noteOnStates.forEach { (0 until it.size).forEach { idx -> it[idx] = 0 } }
+        keyOnMeterStates.forEach { it.value = 0 }
     }
 
     fun play() {

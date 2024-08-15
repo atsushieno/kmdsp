@@ -18,10 +18,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.atsushieno.ktmidi.MidiCC
+import dev.atsushieno.ktmidi.PlayerState
 import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.baseName
@@ -266,23 +268,23 @@ fun PlayerStatusPanel() {
 
 @Composable
 fun StatusPanelLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 10.sp, color = LocalKmdspThemeStatusLabelColor.current, modifier = modifier)
+    Text(text, fontSize = 10.sp, lineHeight = 12.sp, color = LocalKmdspThemeStatusLabelColor.current, modifier = modifier)
 }
 
 @Composable
 fun StatusPanelValue(text: String, modifier: Modifier = Modifier) {
-    Text(text, fontSize = 20.sp, color = LocalKmdspThemeStatusValueColor.current, modifier = modifier)
+    Text(text, fontSize = 20.sp, textAlign = TextAlign.End, color = LocalKmdspThemeStatusValueColor.current, modifier = modifier)
 }
 
 @Composable
 fun PlayerStatusPanelEntry(text1: String, text2: String, value: String) {
-    Row(Modifier.padding(4.dp)) {
+    Row {
         Box(Modifier.background(LocalKmdspThemeStatusValueColor.current).width(5.dp).wrapContentHeight()) {
             Text(" ", fontSize = 20.sp)
         }
         Column(Modifier.width(80.dp).padding(8.dp, 0.dp)) {
             StatusPanelLabel(text1)
-            StatusPanelLabel(text2)
+            StatusPanelLabel(" $text2")
         }
         StatusPanelValue(value)
     }
@@ -334,7 +336,9 @@ fun KeyOnMeter(channel: Int) {
     val meterHeight = remember { Animatable(0f) }
     val keyOnMeterState by remember { AppModel.keyOnMeterStates[channel] }
     LaunchedEffect(channel, keyOnMeterState) {
-        meterHeight.snapTo(1f)
+        // it should not trigger the effect if it is not at playing state (e.g. at initial state)
+        if (AppModel.midiPlayer.value.state == PlayerState.PLAYING)
+            meterHeight.snapTo(1f)
         // the decay speed depends on tempo.
         val decayMillis = 1500 * 500000 / AppModel.musicStatus.value.tempo
         meterHeight.animateTo(0f, initialVelocity = 1f, animationSpec = TweenSpec(decayMillis))
