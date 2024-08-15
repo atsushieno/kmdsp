@@ -56,4 +56,4 @@ jobs:
       if: contains(matrix.os, 'ubuntu')
       with:
         branch: gh-pages
-        folder: kmdsp/build/processedResources/wasmJs/main
+        folder: kmdsp/build/dist/wasmJs/productionExecutable
