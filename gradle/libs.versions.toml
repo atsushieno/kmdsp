@@ -3,7 +3,7 @@ agp = "8.2.2"
 android-compileSdk = "34"
 android-minSdk = "24"
 android-targetSdk = "34"
-androidx-activityCompose = "1.9.1"
+androidx-activityCompose = "1.9.2"
 androidx-appcompat = "1.7.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core-ktx = "1.13.1"
@@ -11,16 +11,18 @@ androidx-espresso-core = "3.6.1"
 androidx-lifecycle = "2.8.0"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
+componentsResources = "1.6.11"
 compose-plugin = "1.6.11"
 composeAudioControls = "0.6.2"
 filekitCore = "0.7.0"
 junit = "4.13.2"
-kotlin = "2.0.0"
+kotlin = "2.0.20"
 kotlinx-coroutines = "1.8.1"
 
 gradle-javacpp = "1.5.10"
-ktmidi = "0.9.2"
+ktmidi = "0.10.0"
 rtmidi-javacpp = "0.1.5"
+libremidi-javacpp = "0.1.2"
 
 [libraries]
 compose-audio-controls = { module = "org.androidaudioplugin:compose-audio-controls", version.ref = "composeAudioControls" }
@@ -42,8 +44,8 @@ androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 ktmidi = { module = "dev.atsushieno:ktmidi", version.ref = "ktmidi" }
 ktmidi-jvm-desktop = { module = "dev.atsushieno:ktmidi-jvm-desktop", version.ref = "ktmidi" }
-rtmidi-javacpp = { module = "dev.atsushieno:rtmidi-javacpp", version.ref = "rtmidi-javacpp" }
 rtmidi-javacpp-platform = { module = "dev.atsushieno:rtmidi-javacpp-platform", version.ref = "rtmidi-javacpp" }
+libremidi-javacpp-platform = { module = "dev.atsushieno:libremidi-javacpp-platform", version.ref = "libremidi-javacpp" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

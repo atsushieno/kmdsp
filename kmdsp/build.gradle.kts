@@ -77,8 +77,10 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktmidi.jvm.desktop)
-            // without this, jnirtmidi.so will not be found at runtime.
-            api(libs.rtmidi.javacpp.platform)        }
+            // without this, jnirtmidi.so and jnilibremidi.so will not be found at runtime.
+            api(libs.rtmidi.javacpp.platform)
+            api(libs.libremidi.javacpp.platform)
+        }
     }
 }
 
