@@ -1,7 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
@@ -13,9 +11,9 @@ plugins {
 }
 
 kotlin {
-    @OptIn(ExperimentalWasmDsl::class)
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
-        moduleName = "kmdsp"
+        outputModuleName = "kmdsp"
         browser {
             val projectDirPath = project.projectDir.path
             commonWebpackConfig {
@@ -30,15 +28,18 @@ kotlin {
         }
         binaries.executable()
     }
-    
+
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
     
-    jvm("desktop")
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_22)
+        }
+    }
     
     listOf(
         iosX64(),
@@ -46,7 +47,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "Kmdsp"
             isStatic = true
         }
     }
@@ -77,9 +78,8 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktmidi.jvm.desktop)
-            // without this, jnirtmidi.so and jnilibremidi.so will not be found at runtime.
+            // without this, jnirtmidi.so will not be found at runtime.
             api(libs.rtmidi.javacpp.platform)
-            api(libs.libremidi.javacpp.platform)
         }
     }
 }
