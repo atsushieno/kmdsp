@@ -1,7 +1,7 @@
-package dev.atsushieno.kmdsp
-
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import dev.atsushieno.kmdsp.App
+import dev.atsushieno.kmdsp.AppModel
 import dev.atsushieno.ktmidi.*
 import java.io.File
 

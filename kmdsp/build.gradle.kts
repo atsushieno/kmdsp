@@ -1,31 +1,24 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.gradleJavacppPlatform) // required to resolve rtmidi-javacpp-platform appropriately
 }
+dependencies.platform(libs.compose.bom)
 
 kotlin {
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs {
-        outputModuleName = "kmdsp"
+        moduleName = "kmdsp"
         browser {
-            val projectDirPath = project.projectDir.path
             commonWebpackConfig {
                 outputFileName = "kmdsp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(projectDirPath)
-                    }
-                }
             }
         }
+        //nodejs {}
         binaries.executable()
     }
 
@@ -35,11 +28,7 @@ kotlin {
         }
     }
     
-    jvm("desktop") {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_22)
-        }
-    }
+    jvm("desktop")
     
     listOf(
         iosX64(),
@@ -51,7 +40,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         val desktopMain by getting
         
@@ -62,7 +51,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material)
+            implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
@@ -80,6 +69,11 @@ kotlin {
             implementation(libs.ktmidi.jvm.desktop)
             // without this, jnirtmidi.so will not be found at runtime.
             api(libs.rtmidi.javacpp.platform)
+        }
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(libs.kotlinx.browser)
+            }
         }
     }
 }
@@ -123,7 +117,7 @@ android {
 
 compose.desktop {
     application {
-        mainClass = "dev.atsushieno.kmdsp.MainKt"
+        mainClass = "MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
