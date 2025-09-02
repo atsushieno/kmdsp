@@ -1,49 +1,48 @@
 [versions]
-agp = "8.7.3"
-android-compileSdk = "35"
-android-minSdk = "24"
-android-targetSdk = "35"
+agp = "8.11.0"
+android-compileSdk = "36"
+android-minSdk = "23"
+android-targetSdk = "36"
 androidx-activityCompose = "1.10.1"
-androidx-espresso-core = "3.6.1"
-androidx-lifecycle = "2.8.4"
-androidx-test-junit = "1.2.1"
-composeAudioControls = "0.7.0"
-filekitCore = "0.7.0"
+androidx-core-ktx = "1.17.0"
+androidx-espresso-core = "3.7.0"
+androidx-test-junit = "1.3.0"
+composeAudioControls = "0.7.1"
+filekit = "0.10.0"
+compose-multiplatform = "1.8.2"
+compose-bom = "2025.08.01"
 junit = "4.13.2"
-kotlin = "2.0.21"
-kotlinx-coroutines = "1.9.0"
-kotlinx-browser = "0.3"
-compose-bom = "2025.05.00"
-compose-plugin = "1.7.3"
+kotlin = "2.2.10"
+dokka = "2.0.0"
 
-gradle-javacpp = "1.5.10"
-ktmidi = "0.11.0"
-rtmidi-javacpp = "0.1.5"
+kotlinx-browser = "0.3"
+kotlinx-coroutines-core = "1.10.2"
+
+ktmidi = "0.11.1"
+libremidi-panama = "0.2.7"
 
 [libraries]
 compose-audio-controls = { module = "org.androidaudioplugin:compose-audio-controls", version.ref = "composeAudioControls" }
 compose-audio-controls-midi = { module = "org.androidaudioplugin:compose-audio-controls-midi", version.ref = "composeAudioControls" }
-filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekitCore" }
-filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekitCore" }
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
 kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-test-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-junit" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso-core" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
-androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines-core" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines-core" }
 ktmidi = { module = "dev.atsushieno:ktmidi", version.ref = "ktmidi" }
 ktmidi-jvm-desktop = { module = "dev.atsushieno:ktmidi-jvm-desktop", version.ref = "ktmidi" }
-rtmidi-javacpp-platform = { module = "dev.atsushieno:rtmidi-javacpp-platform", version.ref = "rtmidi-javacpp" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+libremidi-panama = { module = "dev.atsushieno:libremidi-panama", version.ref = "libremidi-panama" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-gradleJavacppPlatform = { id = "org.bytedeco.gradle-javacpp-platform", version.ref = "gradle-javacpp" }
-composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+
+[bundles]
+

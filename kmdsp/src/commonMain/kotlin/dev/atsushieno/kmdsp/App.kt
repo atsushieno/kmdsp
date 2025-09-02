@@ -23,9 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.atsushieno.ktmidi.MidiCC
 import dev.atsushieno.ktmidi.PlayerState
-import io.github.vinceglb.filekit.core.FileKit
-import io.github.vinceglb.filekit.core.PickerMode
-import io.github.vinceglb.filekit.core.baseName
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.*
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.nameWithoutExtension
+import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.launch
 import org.androidaudioplugin.composeaudiocontrols.DiatonicKeyboard
 import org.androidaudioplugin.composeaudiocontrols.midi.KtMidiDeviceSelector
@@ -246,9 +248,9 @@ fun FilePickerLauncher(currentFileName: String?, onChange: (baseFileName: String
     val scope = rememberCoroutineScope()
     Button(onClick = {
         scope.launch {
-            val file = FileKit.pickFile(mode = PickerMode.Single)
+            val file = FileKit.openFilePicker(mode = FileKitMode.Single)
             if (file != null)
-                onChange(file.baseName, file.path ?: file.name, file.readBytes().toList())
+                onChange(file.nameWithoutExtension, file.toString(), file.readBytes().toList())
             else
                 onDismiss()
         }

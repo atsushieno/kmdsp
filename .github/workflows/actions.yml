@@ -28,7 +28,7 @@ jobs:
         sudo apt-get update
 
     - name: build
-      run: ./gradlew build package
+      run: ./gradlew build package wasmJsBrowserDistribution
 
     - name: upload build failure logs
       if: failure()

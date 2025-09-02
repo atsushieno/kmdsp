@@ -6,13 +6,11 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.gradleJavacppPlatform) // required to resolve rtmidi-javacpp-platform appropriately
 }
 dependencies.platform(libs.compose.bom)
 
 kotlin {
     wasmJs {
-        moduleName = "kmdsp"
         browser {
             commonWebpackConfig {
                 outputFileName = "kmdsp.js"
@@ -54,20 +52,18 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
+            //implementation(libs.androidx.lifecycle.viewmodel)
+            //implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.ktmidi)
             implementation(libs.compose.audio.controls)
             implementation(libs.compose.audio.controls.midi)
-            implementation(libs.filekit.core)
-            implementation(libs.filekit.compose)
+            implementation(libs.filekit.dialogs)
+            implementation(libs.filekit.dialogs.compose)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktmidi.jvm.desktop)
-            // without this, jnirtmidi.so will not be found at runtime.
-            api(libs.rtmidi.javacpp.platform)
         }
         val wasmJsMain by getting {
             dependencies {
